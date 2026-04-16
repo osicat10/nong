@@ -1,0 +1,22 @@
+# Prerequisites
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Build directories
+build/
+out/
+bin/
+
+# IDE and VSCode specific files
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+
+# OS generated files
+.DS_Store
+Thumbs.db
