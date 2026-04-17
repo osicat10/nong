@@ -27,7 +27,6 @@ namespace NONG {
         {
             Component* ptr = *it;
             delete ptr;
-            monoBehaviours.erase(dynamic_cast<MonoBehaviour*>(ptr));
             components.erase(it);         
 
             return true;
@@ -126,13 +125,5 @@ namespace NONG {
             } 
         }
         return _os;
-    }
-
-    void Object::RunMonoBehaviours()
-    {
-        for(MonoBehaviour* mb : monoBehaviours)
-        {
-            mb->Update();
-        }
     }
 }

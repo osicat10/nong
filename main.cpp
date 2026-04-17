@@ -91,11 +91,55 @@ int tmp()
     return 0;
 }
 
+using namespace NONG;
+
+class TestComponent : public MonoBehaviour
+{
+private:
+    std::string customString;
+
+    Object* holder;
+
+public:
+    TestComponent(std::string customString, bool enabled) : MonoBehaviour(enabled), customString(customString) { }
+
+    void Start() override
+    {
+        holder = GetObject();
+        std::cout << "[" << holder->GetName() << "] Hello from the Start()!\n" 
+            << "Custom string: " << customString << "\n\n";
+    }
+
+    void Update() override
+    {
+        std::cout << "[" << holder->GetName() << "] Hello from the Update()!\n" 
+            << "Custom string: " << customString << "\n\n";
+    }
+
+    
+};
+
 int main(int argc, char* argv[]) 
 {
-    NONG::Object a("Hello, World!");
+    Object a("Object A");
+    Object b("Object B");
 
-    std::cout << a.GetName() << "\n";
+    MonoBehaviour& mba = *a.AddComponent<TestComponent>("Enabled on start", true);
+    MonoBehaviour& mbb = *b.AddComponent<TestComponent>("Disabled on start", false);
+
+    std::cout << "Iteration 1:\n";
+    MonoBehaviourController::StartNewMonoBehaviours();
+    MonoBehaviourController::RunMonoBehaviours();
+    mbb.SetEnabled(true);
+
+    std::cout << "Iteration 2:\n";
+    MonoBehaviourController::StartNewMonoBehaviours();
+    MonoBehaviourController::RunMonoBehaviours();
+    mba.SetEnabled(false);
+
+    std::cout << "Iteration 3:\n";
+    MonoBehaviourController::StartNewMonoBehaviours();
+    MonoBehaviourController::RunMonoBehaviours();
 
 
     return 0;

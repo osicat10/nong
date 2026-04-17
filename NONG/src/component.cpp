@@ -1,23 +1,78 @@
 #include "NONG/component.h"
 
 namespace NONG {
+    Object* Component::GetObject()
+    {
+        return holder;
+    }
+
     void MonoBehaviour::Start() { }
     void MonoBehaviour::Update() { }
+    void MonoBehaviour::LateUpdate() { }
 
-    std::vector<MonoBehaviour*> newMonoBehaviours;
+    std::vector<MonoBehaviour*> MonoBehaviour::newMonoBehaviours;
+    std::set<MonoBehaviour*> MonoBehaviour::monoBehaviours;
 
-    MonoBehaviour::MonoBehaviour()
+    MonoBehaviour::MonoBehaviour() : MonoBehaviour(true) { }
+    MonoBehaviour::MonoBehaviour(bool enabled) : enabled(enabled)
     {
         newMonoBehaviours.push_back(this);
+        monoBehaviours.insert(this);
+    }
+    MonoBehaviour::~MonoBehaviour()
+    {
+        monoBehaviours.erase(this);
     }
 
     void MonoBehaviour::StartNewMonoBehaviours()
     {
+        if(newMonoBehaviours.empty()) return;
+        std::vector<MonoBehaviour*> nextNewMonoBehaviours;
         for(MonoBehaviour* mb : newMonoBehaviours)
         {
-            mb->Start();
+            if(mb->enabled)
+            {
+                mb->Start();
+            }
+            else
+            {
+                nextNewMonoBehaviours.push_back(mb);
+            }
         }
-        newMonoBehaviours.clear();
+        newMonoBehaviours = nextNewMonoBehaviours;
+    }
+
+    void MonoBehaviour::RunMonoBehaviours()
+    {
+        for(MonoBehaviour* mb : monoBehaviours)
+        {
+            if(mb->enabled) mb->Update();
+        }
+
+        for(MonoBehaviour* mb : monoBehaviours)
+        {
+            if(mb->enabled) mb->LateUpdate();
+        }
+    }
+
+    void MonoBehaviour::SetEnabled(bool enabled)
+    {
+        this->enabled = enabled;
+    }
+
+    bool MonoBehaviour::IsEnabled()
+    {
+        return enabled;
+    }
+
+    void MonoBehaviourController::RunMonoBehaviours()
+    {
+        MonoBehaviour::RunMonoBehaviours();
+    }
+
+    void MonoBehaviourController::StartNewMonoBehaviours()
+    {
+        MonoBehaviour::StartNewMonoBehaviours();
     }
 
 }

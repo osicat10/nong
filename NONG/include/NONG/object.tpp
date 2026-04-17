@@ -1,20 +1,18 @@
+#include "object.h"
 namespace NONG {
-    template<class T, typename ...Args>
+
+    template<DerivedFromComponent T, typename ...Args>
     T* Object::AddComponent(Args... args)
     {
         T* c = new T(args...);
-        components.push_back(dynamic_cast<Component*>(c));
-
-        if constexpr (std::is_base_of<MonoBehaviour, T>::value) 
-        {
-            MonoBehaviour* mb = dynamic_cast<MonoBehaviour*>(c);
-            monoBehaviours.insert(mb);
-        }
+        Component* component = dynamic_cast<Component*>(c);
+        components.push_back(component);
+        component->holder = this;
 
         return c;
     }
 
-    template<class T>
+    template<DerivedFromComponent T>
     T* Object::GetComponent()
     {
         for(auto& component : components)
@@ -27,7 +25,7 @@ namespace NONG {
         return nullptr;
     }
 
-    template<class T>
+    template<DerivedFromComponent T>
     std::vector<T*> Object::GetAllComponents()
     {
         std::vector<T*> _cs; 

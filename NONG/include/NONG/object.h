@@ -13,12 +13,9 @@ namespace NONG {
     private:
         static std::vector<Object*> objects;
         std::vector<Component*> components;
-        std::set<MonoBehaviour*> monoBehaviours;
 
         std::string name;
         std::set<std::string> tags;
-
-        void RunMonoBehaviours();
     public:
 
 #pragma region Constructors
@@ -37,10 +34,13 @@ namespace NONG {
         Component* GetComponentOfType(const std::string& type);
         std::vector<Component*> GetAllComponentsOfType(const std::string& type);
 
-        template<class T>
-        T* GetComponent();
-        
-        template<class T>
+        template <DerivedFromComponent T, typename... Args>
+        T *AddComponent(Args... args);
+
+        template <DerivedFromComponent T>
+        T *GetComponent();
+
+        template<DerivedFromComponent T>
         std::vector<T*> GetAllComponents();   
 #pragma endregion
 
