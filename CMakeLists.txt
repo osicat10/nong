@@ -24,6 +24,7 @@ FetchContent_MakeAvailable(SDL3)
 add_library(NONG STATIC 
     NONG/src/component.cpp
     NONG/src/object.cpp
+    NONG/src/vector.cpp
 )
 
 # Tell CMake where your engine's header files (NONG.h, component.h, etc.) live.

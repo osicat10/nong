@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#include <NONG/NONG.h>
+#include <NONG.h>
 
 #include <iostream>
 
