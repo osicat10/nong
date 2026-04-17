@@ -27,19 +27,33 @@ namespace NONG {
     void MonoBehaviour::StartNewMonoBehaviours()
     {
         if(newMonoBehaviours.empty()) return;
-        std::vector<MonoBehaviour*> nextNewMonoBehaviours;
-        for(MonoBehaviour* mb : newMonoBehaviours)
+
+        static std::vector<MonoBehaviour*> monoBehavioursToStart;
+
+        int writeIndex = 0;
+
+        for(int readIndex = 0; readIndex < newMonoBehaviours.size(); readIndex++)
         {
+            MonoBehaviour* mb = newMonoBehaviours[readIndex];
+
             if(mb->enabled)
             {
-                mb->Start();
+                monoBehavioursToStart.push_back(mb);
             }
             else
             {
-                nextNewMonoBehaviours.push_back(mb);
+                newMonoBehaviours[writeIndex] = mb;
+                writeIndex++;
             }
         }
-        newMonoBehaviours = nextNewMonoBehaviours;
+
+        newMonoBehaviours.erase(newMonoBehaviours.begin() + writeIndex, newMonoBehaviours.end());
+
+        for(MonoBehaviour* mb : monoBehavioursToStart)
+        {
+            mb->Start();
+        }
+        monoBehavioursToStart.clear();
     }
 
     void MonoBehaviour::RunMonoBehaviours()
