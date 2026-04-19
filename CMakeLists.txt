@@ -25,6 +25,10 @@ add_library(NONG STATIC
     NONG/src/component.cpp
     NONG/src/object.cpp
     NONG/src/vector.cpp
+    NONG/src/input.cpp
+    NONG/src/color.cpp
+    NONG/src/window.cpp
+    NONG/src/time.cpp
 )
 
 # Tell CMake where your engine's header files (NONG.h, component.h, etc.) live.
@@ -32,13 +36,13 @@ add_library(NONG STATIC
 target_include_directories(NONG PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/NONG/include)
 
 # Link SDL3 to the engine.
-# PUBLIC means that PONG won't have to manually link SDL3; it inherits it through NONG.
+# PUBLIC means that any game won't have to manually link SDL3; it inherits it through NONG.
 target_link_libraries(NONG PUBLIC SDL3::SDL3)
 
 # ==============================================================================
 # 2. BUILD THE TEST EXECUTABLE 
 # ==============================================================================
-# This is your current main.cpp used just for testing the engine.
+# This current main.cpp used just for testing the engine.
 add_executable(EngineTest main.cpp)
 
 # Link your custom NONG engine to the test executable.
