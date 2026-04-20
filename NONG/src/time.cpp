@@ -6,6 +6,12 @@ namespace NONG{
     {
         Time::Update();
     }
+
+    uint64_t Time::_lastFrameTimeNs = 0;
+    uint64_t Time::_currentFrameTimeNs = 0;
+    uint64_t Time::_deltaTimeNs = 0;
+    double Time::_deltaTime = 0;
+    double Time::_currentFrameTime = 0;
     
     void Time::Update()
     {

@@ -16,7 +16,7 @@ Before building, ensure you have the following installed:
 * **Git** (Required for CMake FetchContent to download SDL3)
 
 ## 🏗️ How to Build
-This project uses CMake to automatically fetch dependencies (SDL3) and generate the build files.
+This project uses CMake to automatically fetch dependencies (SDL3, SDL Shadercross and stb) and generate the build files.
 
 1. Clone the repository:
    ```bash

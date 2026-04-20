@@ -1,6 +1,10 @@
 #include "NONG/window.h"
 #include "NONG/input.h"
 #include "NONG/time.h"
+#include "NONG/shader.h"
+#include "NONG/texture.h"
+#include "NONG/graphics_pipeline.h"
+#include "NONG/mesh.h"
 
 #include <stdexcept>
 
@@ -66,7 +70,7 @@ namespace NONG {
         return gpuDriverName;
     }
 
-    void Window::Initialize()
+    void Window::Initialize(bool debug)
     {
         if (!SDL_Init(SDL_INIT_VIDEO)) {
             throw std::runtime_error("Couldn't initialize SDL: " + std::string(SDL_GetError()));
@@ -75,13 +79,7 @@ namespace NONG {
         window = SDL_CreateWindow(title.c_str(), size.first, size.second, flags);
         if (!window) {
             throw std::runtime_error("Couldn't create window: " + std::string(SDL_GetError()));
-        }
-
-        #ifndef NDEBUG
-        const bool debug = false;
-        #else
-        const bool debug = true;
-        #endif        
+        } 
 
         device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | 
             SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL, 
@@ -93,12 +91,21 @@ namespace NONG {
         if (!SDL_ClaimWindowForGPUDevice(device, window)) {
             throw std::runtime_error("Couldn't claim window: " + std::string(SDL_GetError()));
         }
+
+        Texture::SetGPUDevice(device);
+        Shader::SetGPUDevice(device);
+        GraphicsPipeline::SetGPUDevice(device);
+        GraphicsPipeline::SetGPUTextureFormat(SDL_GetGPUSwapchainTextureFormat(device, window));
+        Mesh::SetGPUDevice(device);
     }
 
     void Window::SetClearColor(const Color& color) { clearColor = color; }
     Color Window::GetClearColor() { return clearColor; }
 
-    SDL_GPURenderPass* Window::BeginRenderPass()
+    SDL_GPUDevice* Window::GetGPUDevice() const { return device; }
+    SDL_Window* Window::GetWindow() const { return window; }
+
+    RenderContext Window::BeginRenderPass()
     {
         cmdBuf = SDL_AcquireGPUCommandBuffer(device);
         SDL_GPUTexture* swapchainTexture;
@@ -115,15 +122,22 @@ namespace NONG {
                 colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
                 colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
 
-                return SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, NULL);                
+                renderPass = SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, NULL);       
             }
         }
-        return nullptr;
+        
+        return RenderContext{
+            .cmdBuf = cmdBuf,
+            .renderPass = renderPass                    
+        };
     }
-    void Window::EndRenderPass(SDL_GPURenderPass* renderPass)
+    void Window::EndRenderPass()
     {
-        SDL_EndGPURenderPass(renderPass);
-        SDL_SubmitGPUCommandBuffer(cmdBuf);
+        if(renderPass) SDL_EndGPURenderPass(renderPass);
+        if(cmdBuf) SDL_SubmitGPUCommandBuffer(cmdBuf);
+
+        renderPass = nullptr;
+        cmdBuf = nullptr;
     }
 
     void Window::HandleEvents(std::function<void(SDL_Event)> customHandler)

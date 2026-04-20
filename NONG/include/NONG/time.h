@@ -1,6 +1,8 @@
 #ifndef NONG_TIME_H
 #define NONG_TIME_H
 
+#include <cstdint>
+
 namespace NONG {
     class TimeController
     {

@@ -5,8 +5,11 @@ project(NongEngineWorkspace CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Automatically download and build SDL3 from GitHub
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(FetchContent)
+
+# Automatically download and build SDL3 from GitHub
 FetchContent_Declare(
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -15,6 +18,18 @@ FetchContent_Declare(
 set(SDL_SHARED OFF CACHE BOOL "Build SDL shared library" FORCE)
 set(SDL_STATIC ON CACHE BOOL "Build SDL static library" FORCE)
 FetchContent_MakeAvailable(SDL3)
+
+# Download stb
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(stb)
+
+# ==============================================================================
+# 0. COMPILE THE SHADERS
+include(cmake/ShaderBaker.cmake)
 
 # ==============================================================================
 # 1. BUILD THE ENGINE LIBRARY (NONG)
@@ -29,15 +44,27 @@ add_library(NONG STATIC
     NONG/src/color.cpp
     NONG/src/window.cpp
     NONG/src/time.cpp
+    NONG/src/image.cpp
+    NONG/src/texture.cpp
+#    NONG/src/renderer.cpp
+    NONG/src/shader.cpp
+    NONG/src/material.cpp
+    NONG/src/mesh.cpp
+    NONG/src/graphics_pipeline.cpp
+    NONG/src/material.cpp
+    ${GENERATED_CPP_FILE}
 )
+add_dependencies(NONG CompileShaders)
 
 # Tell CMake where your engine's header files (NONG.h, component.h, etc.) live.
 # PUBLIC means that any game linking to NONG will also know where these headers are.
 target_include_directories(NONG PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/NONG/include)
 
-# Link SDL3 to the engine.
+# Link SDL3 and SDL Shader Cross to the engine.
 # PUBLIC means that any game won't have to manually link SDL3; it inherits it through NONG.
 target_link_libraries(NONG PUBLIC SDL3::SDL3)
+# Link stb to the engine.
+target_include_directories(NONG PUBLIC ${stb_SOURCE_DIR})
 
 # ==============================================================================
 # 2. BUILD THE TEST EXECUTABLE 

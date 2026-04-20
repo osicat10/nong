@@ -3,13 +3,17 @@
 
 #include <SDL3/SDL.h>
 
+#include "NONG/utility.h"
 #include "NONG/color.h"
 
 #include <string>
 #include <functional>
 
 namespace NONG {
-    using Int2 = std::pair<int, int>;
+    struct RenderContext {
+        SDL_GPUCommandBuffer* cmdBuf;
+        SDL_GPURenderPass* renderPass;
+    };
 
     class Window
     {
@@ -23,7 +27,9 @@ namespace NONG {
 
         SDL_Window* window = nullptr;
         SDL_GPUDevice* device = nullptr;
-SDL_GPUCommandBuffer* cmdBuf = nullptr;      
+
+        SDL_GPUCommandBuffer* cmdBuf = nullptr;      
+        SDL_GPURenderPass* renderPass = nullptr;
     public:
         Window();
         Window(const std::string& title, Int2 size, SDL_WindowFlags flags = 0, std::string gpuDriverName = "");
@@ -51,12 +57,15 @@ SDL_GPUCommandBuffer* cmdBuf = nullptr;
         void SetClearColor(const Color& c);
         Color GetClearColor();
 
-        [[nodiscard]] SDL_GPURenderPass* BeginRenderPass();
-        void EndRenderPass(SDL_GPURenderPass* renderPass);
+        SDL_GPUDevice* GetGPUDevice() const;
+        SDL_Window* GetWindow() const;
+
+        [[nodiscard]] RenderContext BeginRenderPass();
+        void EndRenderPass();
 
         void HandleEvents(std::function<void(SDL_Event)> customHandler = nullptr);
 
-        void Initialize();
+        void Initialize(bool debug = false);
     };
 }
 
