@@ -5,6 +5,7 @@
 #include "NONG/graphics_pipeline.h"
 #include "NONG/window.h"
 #include "NONG/texture.h"
+#include "NONG/renderer.h"
 #include <unordered_map>
 #include <vector>
 
@@ -19,6 +20,8 @@ namespace NONG {
         // A raw byte array to hold arbitrary uniform data (colors, time, etc.)
         std::vector<Uint8> fragmentUniformData;
 
+        void Bind(const RenderContext& renderContext);
+
     public:
         Material(GraphicsPipeline& pipeline);
         ~Material();
@@ -32,8 +35,8 @@ namespace NONG {
             const Uint8* rawData = reinterpret_cast<const Uint8*>(&data);
             fragmentUniformData.assign(rawData, rawData + sizeof(T));
         }
-
-        void Bind(const RenderContext& renderContext);
+        
+        friend class Renderer;
     };
 }
 

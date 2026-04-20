@@ -45,13 +45,15 @@ add_library(NONG STATIC
     NONG/src/window.cpp
     NONG/src/time.cpp
     NONG/src/image.cpp
-    NONG/src/texture.cpp
-#    NONG/src/renderer.cpp
+    NONG/src/texture.cpp    
     NONG/src/shader.cpp
     NONG/src/material.cpp
     NONG/src/mesh.cpp
     NONG/src/graphics_pipeline.cpp
     NONG/src/material.cpp
+    NONG/src/renderer.cpp
+    NONG/src/camera.cpp
+    NONG/src/sprite_renderer.cpp
     ${GENERATED_CPP_FILE}
 )
 add_dependencies(NONG CompileShaders)

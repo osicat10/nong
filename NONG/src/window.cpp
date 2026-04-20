@@ -14,9 +14,10 @@ namespace NONG {
     Window::Window(const std::string& title, Int2 size, SDL_WindowFlags flags, std::string gpuDriverName) : title(title), size(size), flags(flags), gpuDriverName(gpuDriverName) { }
     Window::~Window()
     {
-        SDL_ReleaseWindowFromGPUDevice(device, window);
-        SDL_DestroyGPUDevice(device);
-        SDL_DestroyWindow(window);
+        if(window && device) SDL_ReleaseWindowFromGPUDevice(device, window);
+        if(device) SDL_DestroyGPUDevice(device);
+        if(window) SDL_DestroyWindow(window);
+        if (depthTexture) SDL_ReleaseGPUTexture(device, depthTexture);
         SDL_Quit();
     }
 
@@ -108,27 +109,44 @@ namespace NONG {
     RenderContext Window::BeginRenderPass()
     {
         cmdBuf = SDL_AcquireGPUCommandBuffer(device);
-        SDL_GPUTexture* swapchainTexture;
-
-        if (SDL_WaitAndAcquireGPUSwapchainTexture(cmdBuf, window, &swapchainTexture, NULL, NULL)) {
-            if (swapchainTexture != NULL) {
-                
-                SDL_GPUColorTargetInfo colorTargetInfo = {0};
-                colorTargetInfo.texture = swapchainTexture;
-                colorTargetInfo.clear_color.r = clearColor.r;
-                colorTargetInfo.clear_color.g = clearColor.g;
-                colorTargetInfo.clear_color.b = clearColor.b;
-                colorTargetInfo.clear_color.a = clearColor.a;
-                colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
-                colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
-
-                renderPass = SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, NULL);       
-            }
-        }
         
+        SDL_GPUTexture* swapchainTexture;
+        Uint32 swapchainWidth, swapchainHeight;
+        bool acquired = SDL_AcquireGPUSwapchainTexture(cmdBuf, window, &swapchainTexture, &swapchainWidth, &swapchainHeight);
+
+        if (!acquired || swapchainTexture == nullptr) {
+            SDL_SubmitGPUCommandBuffer(cmdBuf);
+            return { nullptr, nullptr }; 
+        }
+
+        if (swapchainWidth != currentDepthWidth || swapchainHeight != currentDepthHeight) {
+            RecreateDepthTexture(swapchainWidth, swapchainHeight);
+        }
+
+        // 1. The Color Target (What you see)
+        SDL_GPUColorTargetInfo colorTargetInfo = {};
+        colorTargetInfo.texture = swapchainTexture;
+        colorTargetInfo.clear_color.r = clearColor.r;
+        colorTargetInfo.clear_color.g = clearColor.g;
+        colorTargetInfo.clear_color.b = clearColor.b;
+        colorTargetInfo.clear_color.a = clearColor.a;
+        colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
+        colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
+
+        SDL_GPUDepthStencilTargetInfo depthTargetInfo = {};
+        depthTargetInfo.texture = depthTexture;
+        depthTargetInfo.clear_depth = 1.0f; 
+        depthTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
+        depthTargetInfo.store_op = SDL_GPU_STOREOP_DONT_CARE;
+        depthTargetInfo.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+        depthTargetInfo.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+        depthTargetInfo.cycle = true;
+        
+        renderPass = SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, &depthTargetInfo);
+
         return RenderContext{
             .cmdBuf = cmdBuf,
-            .renderPass = renderPass                    
+            .renderPass = renderPass
         };
     }
     void Window::EndRenderPass()
@@ -152,5 +170,31 @@ namespace NONG {
                 shouldQuit = true;
             }
         }
+    }
+
+    void Window::RecreateDepthTexture(Uint32 width, Uint32 height) 
+    {
+        if (width == currentDepthWidth && height == currentDepthHeight) return;
+        
+        if (width == 0 || height == 0) return; 
+
+        if (depthTexture) {
+            SDL_ReleaseGPUTexture(device, depthTexture);
+            depthTexture = nullptr;
+        }
+
+        SDL_GPUTextureCreateInfo createInfo = {};
+        createInfo.type = SDL_GPU_TEXTURETYPE_2D;
+        createInfo.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT; 
+        createInfo.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+        createInfo.width = width;
+        createInfo.height = height;
+        createInfo.layer_count_or_depth = 1;
+        createInfo.num_levels = 1;
+
+        depthTexture = SDL_CreateGPUTexture(device, &createInfo);
+        
+        currentDepthWidth = width;
+        currentDepthHeight = height;
     }
 }

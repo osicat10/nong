@@ -1,29 +1,33 @@
 #ifndef NONG_RENDERER_H
 #define NONG_RENDERER_H
 
-#include <SDL3/SDL.h>
-#include <SDL3_shadercross/SDL_shadercross.h>
+#include "NONG/render_context.h"
+#include "NONG/material.h"
+#include "NONG/mesh.h"
+#include "NONG/camera.h"
 #include <vector>
 
 namespace NONG {
+
+    class Material;
+
+    struct RenderCommand {
+        Material* material;
+        Mesh* mesh;
+        const float* modelMatrix;
+    };
+
     class Renderer {
     private:
-        SDL_GPUDevice* device;
-        SDL_GPUGraphicsPipeline* spritePipeline;
-        SDL_GPUSampler* defaultSampler;
-
-        // Helper to load shader files into SDL_GPU
-        SDL_GPUShader* LoadShader(const char* filepath, SDL_ShaderCross_ShaderStage stage);
+        static std::vector<RenderCommand> commandQueue;
+        static const Camera* activeCamera;
 
     public:
-        Renderer(SDL_GPUDevice* gpuDevice);
-        ~Renderer();
+        static void BeginScene(Camera* camera); 
 
-        // Called once to set up the shaders and pipeline
-        void Initialize(); 
+        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix);
 
-        // Called every frame
-        //void DrawSprites(SDL_GPURenderPass* renderPass, const std::vector<Sprite*>& sprites);
+        static void Flush(const RenderContext& ctx); 
     };
 }
 

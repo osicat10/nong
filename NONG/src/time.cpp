@@ -16,7 +16,7 @@ namespace NONG{
     void Time::Update()
     {
         _lastFrameTimeNs = _currentFrameTimeNs;
-        _currentFrameTime = SDL_GetTicksNS();
+        _currentFrameTimeNs = SDL_GetTicksNS();
         _deltaTimeNs = _currentFrameTimeNs - _lastFrameTimeNs;
 
         _deltaTime = _deltaTimeNs / 1000000000.0;

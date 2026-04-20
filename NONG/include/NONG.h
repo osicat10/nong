@@ -14,5 +14,7 @@
 #include "NONG/mesh.h"
 #include "NONG/graphics_pipeline.h"
 #include "NONG/material.h"
+#include "NONG/renderer.h"
+#include "NONG/sprite_renderer.h"
 
 #endif

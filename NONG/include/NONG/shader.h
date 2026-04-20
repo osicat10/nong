@@ -17,14 +17,14 @@ namespace NONG {
         static SDL_GPUDevice* device;
         SDL_GPUShader* nativeShader;
 
-        SDL_GPUShader* CompileNative(const unsigned char* code, size_t size, const std::string& backend, SDL_GPUShaderStage stage, int num_samplers);
+        SDL_GPUShader* CompileNative(const unsigned char* code, size_t size, const std::string& backend, SDL_GPUShaderStage stage, int num_samplers, int num_uniform_buffers);
         
     public:
         // Option A: File Path (e.g., "compiled_shaders/sprite.vert")
-        Shader(const std::string& basePath, SDL_GPUShaderStage stage, int num_samplers = 0);
+        Shader(const std::string& basePath, SDL_GPUShaderStage stage, int num_samplers = 0, int num_uniform_buffers = 0);
         
         // Option B: Embedded Data (e.g., BakedShaders::sprite_vert)
-        Shader(const EmbeddedShaderData& data, SDL_GPUShaderStage stage, int num_samplers = 0);
+        Shader(const EmbeddedShaderData& data, SDL_GPUShaderStage stage, int num_samplers = 0, int num_uniform_buffers = 0);
         
         ~Shader();
 

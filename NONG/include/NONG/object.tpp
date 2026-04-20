@@ -17,7 +17,7 @@ namespace NONG {
     {
         for(auto& component : components)
         {
-            if(auto& c =  dynamic_cast<T*>(component); c)
+            if(auto c = dynamic_cast<T*>(component); c)
             {
                 return c;
             }

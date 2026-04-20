@@ -5,16 +5,12 @@
 
 #include "NONG/utility.h"
 #include "NONG/color.h"
+#include "NONG/render_context.h"
 
 #include <string>
 #include <functional>
 
 namespace NONG {
-    struct RenderContext {
-        SDL_GPUCommandBuffer* cmdBuf;
-        SDL_GPURenderPass* renderPass;
-    };
-
     class Window
     {
     private:
@@ -30,6 +26,12 @@ namespace NONG {
 
         SDL_GPUCommandBuffer* cmdBuf = nullptr;      
         SDL_GPURenderPass* renderPass = nullptr;
+
+        SDL_GPUTexture* depthTexture = nullptr;
+        int currentDepthWidth = 0;
+        int currentDepthHeight = 0;
+
+        void RecreateDepthTexture(Uint32 width, Uint32 height);
     public:
         Window();
         Window(const std::string& title, Int2 size, SDL_WindowFlags flags = 0, std::string gpuDriverName = "");

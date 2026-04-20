@@ -14,10 +14,7 @@ namespace NONG {
     void Material::Bind(const RenderContext& renderContext) {
         if (!pipeline) return;
 
-        // 1. Bind Pipeline
-        SDL_BindGPUGraphicsPipeline(renderContext.renderPass, pipeline->GetNative());
-
-        // 2. Push Arbitrary Uniform Variables (Colors, Time, Settings)
+        // 1. Push Arbitrary Uniform Variables (Colors, Time, Settings)
         if (!fragmentUniformData.empty()) {
             // SDL3 pushes this directly to space1 (Fragment Uniforms) automatically!
             SDL_PushGPUFragmentUniformData(
@@ -28,7 +25,7 @@ namespace NONG {
             );
         }
 
-        // 3. Bind Arbitrary Textures
+        // 2. Bind Arbitrary Textures
         for (const auto& [slot, texture] : textures) {
             SDL_GPUTextureSamplerBinding binding = {};
             binding.texture = texture->GetGPUTexture();

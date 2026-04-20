@@ -65,12 +65,14 @@ namespace NONG {
         SDL_ReleaseGPUTransferBuffer(device, transferBuffer);
     }
 
-    Mesh::~Mesh() {
+    Mesh::~Mesh() 
+    {
         if (vertexBuffer) SDL_ReleaseGPUBuffer(device, vertexBuffer);
         if (indexBuffer) SDL_ReleaseGPUBuffer(device, indexBuffer);
     }
 
-    Mesh* Mesh::CreateQuad() {
+    Mesh* Mesh::CreateQuad() 
+    {
         std::vector<Vertex> vertices = {
             // Position                 // UV
             { {-0.5f, -0.5f, 0.0f},     {0.0f, 1.0f} }, // Top Left

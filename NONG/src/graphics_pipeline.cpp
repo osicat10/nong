@@ -62,6 +62,14 @@ namespace NONG {
         pipelineInfo.target_info.num_color_targets = 1;
         pipelineInfo.target_info.color_target_descriptions = &colorTargetDesc;
 
+        pipelineInfo.target_info.has_depth_stencil_target = true;
+        pipelineInfo.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
+
+        pipelineInfo.depth_stencil_state.enable_depth_test = true;
+        pipelineInfo.depth_stencil_state.enable_depth_write = true;
+        
+        pipelineInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
+
         nativePipeline = SDL_CreateGPUGraphicsPipeline(device, &pipelineInfo);
         if (!nativePipeline) {
             throw std::runtime_error("Failed to create graphics pipeline: " + std::string(SDL_GetError()));

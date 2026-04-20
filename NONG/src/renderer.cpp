@@ -1,41 +1,81 @@
 #include "NONG/renderer.h"
+#include <algorithm>
 
 namespace NONG {
-    // You would pass the Camera here, or nullptr if you are making a UI app!
-    void Renderer::DrawScene(SDL_GPURenderPass* renderPass, const std::vector<MeshRenderer*>& renderers, Camera* camera) {
-        
-        // 1. Calculate the Camera's View & Projection Matrices (or use defaults if camera == nullptr)
-        // Matrix4x4 viewProj = (camera) ? camera->GetViewProjection() : Matrix4x4::Identity();
 
-        // 2. Loop through every object that needs to be drawn
-        for (MeshRenderer* renderer : renderers) {
+    std::vector<RenderCommand> Renderer::commandQueue;
+    const Camera* Renderer::activeCamera = nullptr;
+
+    void Renderer::BeginScene(Camera* camera) 
+    {
+        activeCamera = camera;
+        commandQueue.clear();
+    }
+
+    void Renderer::Submit(Material* material, Mesh* mesh, const float* modelMatrix) 
+    {
+        commandQueue.push_back({material, mesh, modelMatrix});
+    }
+
+    void Renderer::Flush(const RenderContext& ctx) 
+    {
+        if (commandQueue.empty() || !activeCamera) return;
+
+        SDL_PushGPUVertexUniformData(
+            ctx.cmdBuf, 
+            0, // Slot 0
+            activeCamera->GetViewProjectionMatrix(), 
+            16 * sizeof(float) // Exactly 64 bytes
+        );
+
+        // 1. THE SORT: Group by Pipeline, then by Material
+        std::sort(commandQueue.begin(), commandQueue.end(), [](const RenderCommand& a, const RenderCommand& b) 
+        {
+            if (a.material->GetPipeline() != b.material->GetPipeline()) {
+                return a.material->GetPipeline() < b.material->GetPipeline(); // Sort by Pipeline memory address
+            }
+            return a.material < b.material; // Then sort by Material memory address
+        });
+
+        // 2. STATE TRACKERS: Keep track of what is currently on the GPU
+        GraphicsPipeline* currentPipeline = nullptr;
+        Material* currentMaterial = nullptr;
+        Mesh* currentMesh = nullptr;
+
+        // 3. THE BATCH DRAW
+        for (const auto& cmd : commandQueue) 
+        {
             
-            Material* mat = renderer->material;
-            Mesh* mesh = renderer->mesh;
-
-            // 3. Bind the Shader Pipeline
-            SDL_BindGPUGraphicsPipeline(renderPass, mat->GetShader()->GetPipeline());
-
-            // 4. Bind the Geometry (Vertex & Index Buffers)
-            SDL_GPUBufferBinding vertexBinding = { mesh->GetVertexBuffer(), 0 };
-            SDL_BindGPUVertexBuffers(renderPass, 0, &vertexBinding, 1);
-            
-            SDL_GPUBufferBinding indexBinding = { mesh->GetIndexBuffer(), 0 };
-            SDL_BindGPUIndexBuffer(renderPass, &indexBinding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
-
-            // 5. Bind the Material Data (Textures)
-            // Note: In a real engine, you'd map "tex_main" to slot 0, "tex_normal" to slot 1, etc.
-            if (Texture* mainTex = mat->GetTexture("main")) {
-                SDL_GPUTextureSamplerBinding samplerBinding = { mainTex->GetGPUTexture(), defaultSampler };
-                SDL_BindGPUFragmentSamplers(renderPass, 0, &samplerBinding, 1);
+            // A. Only bind the Pipeline if it changed!
+            GraphicsPipeline* newPipeline = cmd.material->GetPipeline();
+            if (newPipeline != currentPipeline) 
+            {
+                SDL_BindGPUGraphicsPipeline(ctx.renderPass, newPipeline->GetNative());
+                currentPipeline = newPipeline;
             }
 
-            // 6. Push the Matrix Math (MVP) to the Shader
-            // We calculate Model Matrix based on the Object's Transform + MeshRenderer's size.
-            // SDL_PushGPUVertexUniformData(renderPass, 0, &finalMVPMatrix, sizeof(Matrix4x4));
+            // B. Only bind Textures & Uniforms if the Material changed!
+            if (cmd.material != currentMaterial) 
+            {
+                cmd.material->Bind(ctx);
+                currentMaterial = cmd.material;
+            }
 
-            // 7. DRAW!
-            SDL_DrawGPUIndexedPrimitives(renderPass, mesh->GetIndexCount(), 1, 0, 0, 0);
+            // C. Only bind Vertex/Index buffers if the Mesh changed!
+            if (cmd.mesh != currentMesh) 
+            {
+                SDL_GPUBufferBinding vertexBinding = { cmd.mesh->GetVertexBuffer(), 0 };
+                SDL_BindGPUVertexBuffers(ctx.renderPass, 0, &vertexBinding, 1);
+                
+                SDL_GPUBufferBinding indexBinding = { cmd.mesh->GetIndexBuffer(), 0 };
+                SDL_BindGPUIndexBuffer(ctx.renderPass, &indexBinding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+                
+                currentMesh = cmd.mesh;
+            }
+            SDL_PushGPUVertexUniformData(ctx.cmdBuf, 1, cmd.modelMatrix, 64);
+
+            // D. Issue the actual draw call
+            SDL_DrawGPUIndexedPrimitives(ctx.renderPass, cmd.mesh->GetIndexCount(), 1, 0, 0, 0);
         }
     }
 }

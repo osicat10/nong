@@ -20,7 +20,7 @@ namespace NONG {
         return buffer;
     }
 
-    SDL_GPUShader* Shader::CompileNative(const unsigned char* code, size_t size, const std::string& backend, SDL_GPUShaderStage stage, int numSamplers) 
+    SDL_GPUShader* Shader::CompileNative(const unsigned char* code, size_t size, const std::string& backend, SDL_GPUShaderStage stage, int numSamplers, int numUniformBuffers) 
     {
         SDL_GPUShaderCreateInfo shaderInfo = {};
         shaderInfo.code = code;
@@ -28,6 +28,7 @@ namespace NONG {
         shaderInfo.entrypoint = (stage == SDL_GPU_SHADERSTAGE_VERTEX) ? "VSMain" : "PSMain";
         shaderInfo.stage = stage;
         shaderInfo.num_samplers = numSamplers;
+        shaderInfo.num_uniform_buffers = numUniformBuffers;
 
         if (backend == "vulkan") {
             shaderInfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
@@ -45,29 +46,29 @@ namespace NONG {
     // =========================================================
     // OPTION A: Load from File Path (e.g., "compiled_shaders/sprite_vert")
     // =========================================================
-    Shader::Shader(const std::string& basePath, SDL_GPUShaderStage stage, int numSamplers) : nativeShader(nullptr) 
+    Shader::Shader(const std::string& basePath, SDL_GPUShaderStage stage, int numSamplers, int numUniformBuffers) : nativeShader(nullptr) 
     {
         if (!device) throw std::runtime_error("Shader GPU Device not set!");
         std::string backend = SDL_GetGPUDeviceDriver(device);
         std::string ext = (backend == "vulkan") ? ".spv" : ".dxil";
 
         std::vector<Uint8> buffer = ReadBinaryFile(basePath + ext);
-        nativeShader = CompileNative(buffer.data(), buffer.size(), backend, stage, numSamplers);
+        nativeShader = CompileNative(buffer.data(), buffer.size(), backend, stage, numSamplers, numUniformBuffers);
     }
 
     // =========================================================
     // OPTION B: Load from Embedded Memory Array
     // =========================================================
-    Shader::Shader(const EmbeddedShaderData& data, SDL_GPUShaderStage stage, int numSamplers) : nativeShader(nullptr) 
+    Shader::Shader(const EmbeddedShaderData& data, SDL_GPUShaderStage stage, int numSamplers, int numUniformBuffers) : nativeShader(nullptr) 
     {
         if (!device) throw std::runtime_error("Shader GPU Device not set!");
         std::string backend = SDL_GetGPUDeviceDriver(device);
 
         // Cleanly picking the exact binary format needed from the isolated struct
         if (backend == "vulkan") {
-            nativeShader = CompileNative(data.spv, data.spvSize, backend, stage, numSamplers);
+            nativeShader = CompileNative(data.spv, data.spvSize, backend, stage, numSamplers, numUniformBuffers);
         } else {
-            nativeShader = CompileNative(data.dxil, data.dxilSize, backend, stage, numSamplers);
+            nativeShader = CompileNative(data.dxil, data.dxilSize, backend, stage, numSamplers, numUniformBuffers);
         }
     }
 
