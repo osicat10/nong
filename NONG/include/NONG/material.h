@@ -20,7 +20,7 @@ namespace NONG {
         // A raw byte array to hold arbitrary uniform data (colors, time, etc.)
         std::vector<Uint8> fragmentUniformData;
 
-        void Bind(const RenderContext& renderContext);
+        void Bind(SDL_GPUCommandBuffer* cmdBuf, SDL_GPURenderPass* renderPass);
 
     public:
         Material(GraphicsPipeline& pipeline);

@@ -11,14 +11,14 @@ namespace NONG {
         textures[slot] = &texture;
     }
 
-    void Material::Bind(const RenderContext& renderContext) {
+    void Material::Bind(SDL_GPUCommandBuffer* cmdBuf, SDL_GPURenderPass* renderPass) {
         if (!pipeline) return;
 
         // 1. Push Arbitrary Uniform Variables (Colors, Time, Settings)
-        if (!fragmentUniformData.empty()) {
-            // SDL3 pushes this directly to space1 (Fragment Uniforms) automatically!
+        if (!fragmentUniformData.empty()) 
+        {
             SDL_PushGPUFragmentUniformData(
-                renderContext.cmdBuf, 
+                cmdBuf, 
                 0, // Slot 0
                 fragmentUniformData.data(), 
                 fragmentUniformData.size()
@@ -31,8 +31,7 @@ namespace NONG {
             binding.texture = texture->GetGPUTexture();
             binding.sampler = texture->GetNativeSampler();
             
-            // Binds to the specific slot defined in your HLSL
-            SDL_BindGPUFragmentSamplers(renderContext.renderPass, slot, &binding, 1);
+            SDL_BindGPUFragmentSamplers(renderPass, slot, &binding, 1);
         }
     }
 }

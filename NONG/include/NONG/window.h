@@ -4,13 +4,21 @@
 #include <SDL3/SDL.h>
 
 #include "NONG/utility.h"
-#include "NONG/color.h"
-#include "NONG/render_context.h"
 
 #include <string>
 #include <functional>
 
 namespace NONG {
+
+    struct FrameData
+    {
+        SDL_GPUCommandBuffer* cmdBuf;
+        SDL_GPUTexture* swapchainColor;
+        SDL_GPUTexture* swapchainDepth;
+        Uint32 width;
+        Uint32 height;
+    };
+
     class Window
     {
     private:
@@ -19,13 +27,8 @@ namespace NONG {
         SDL_WindowFlags flags;
         std::string gpuDriverName;
 
-        Color clearColor;
-
         SDL_Window* window = nullptr;
         SDL_GPUDevice* device = nullptr;
-
-        SDL_GPUCommandBuffer* cmdBuf = nullptr;      
-        SDL_GPURenderPass* renderPass = nullptr;
 
         SDL_GPUTexture* depthTexture = nullptr;
         int currentDepthWidth = 0;
@@ -56,14 +59,11 @@ namespace NONG {
         void SetGPUDriverName(std::string gpuDriverName);
         std::string GetGPUDriverName();
 
-        void SetClearColor(const Color& c);
-        Color GetClearColor();
-
         SDL_GPUDevice* GetGPUDevice() const;
         SDL_Window* GetWindow() const;
 
-        [[nodiscard]] RenderContext BeginRenderPass();
-        void EndRenderPass();
+        [[nodiscard]] FrameData BeginFrame();
+        void EndFrame(const FrameData& frame);
 
         void HandleEvents(std::function<void(SDL_Event)> customHandler = nullptr);
 

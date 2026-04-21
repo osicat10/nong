@@ -1,6 +1,7 @@
 #include "NONG/camera.h"
 #include <cmath>
 #include <cstring>
+#include <algorithm>
 
 namespace NONG {
 
@@ -67,6 +68,12 @@ namespace NONG {
     Camera::Camera(Transform* t, ProjectionMode m) : transform(t), mode(m), orthoZoom(1.0f), fov(90.0f), nearPlane(0.1f), farPlane(1000.0f) 
     {
         Identity(viewProjection);
+        allCameras.push_back(this);
+    }
+
+    Camera::~Camera()
+    {
+        allCameras.erase(std::find(allCameras.begin(), allCameras.end(), this));
     }
 
     void Camera::SetMode(ProjectionMode newMode) { mode = newMode; }
@@ -97,5 +104,12 @@ namespace NONG {
 
         // 3. Combine them! (ViewProjection = Projection * View)
         Multiply(proj, view, viewProjection);
+    }
+
+    std::vector<Camera*> Camera::allCameras;
+
+    std::vector<Camera*> Camera::GetAllCameras()
+    {
+        return allCameras;
     }
 }

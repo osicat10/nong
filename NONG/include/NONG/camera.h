@@ -3,6 +3,10 @@
 
 #include "NONG/component.h"
 #include "NONG/transform.h"
+#include "NONG/color.h"
+#include "NONG/render_texture.h"
+
+#include <SDL3/SDL.h>
 
 namespace NONG {
 
@@ -14,21 +18,36 @@ namespace NONG {
     class Camera : public Component {
         DECLARE_COMPONENT(Camera);
     private:
-        ProjectionMode mode;
         Transform* transform;
 
-        // The final 64-byte array we send to the GPU
         float viewProjection[16];
 
+        static std::vector<Camera*> allCameras;
+
+    public:
         // Settings
+        ProjectionMode mode;
         float orthoZoom; // How "zoomed in" the 2D view is
         float fov;       // Field of view for 3D (in degrees)
         float nearPlane;
         float farPlane;
 
-    public:
-        // A Camera requires a Transform to know where it is!
+        int renderOrder = 0;
+
+        // Normalized viewport
+        float viewportX = 0.0f;
+        float viewportY = 0.0f;
+        float viewportW = 1.0f;
+        float viewportH = 1.0f;
+
+        // Clear color
+        Color clearColor = Color::white();
+
+        RenderTexture* renderTexture = nullptr;  
+
+
         Camera(Transform* transform, ProjectionMode mode = ProjectionMode::Orthographic);
+        ~Camera();
 
         void SetMode(ProjectionMode newMode);
         ProjectionMode GetMode();
@@ -44,6 +63,8 @@ namespace NONG {
 
         // What the Renderer pulls to send to the Vertex Shader
         const float* GetViewProjectionMatrix() const;
+
+        static std::vector<Camera*> GetAllCameras();
     };
 }
 

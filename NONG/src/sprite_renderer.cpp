@@ -75,6 +75,6 @@ namespace NONG {
         MakeModelMatrix(modelMatrix, transform, baseWidth, baseHeight);
 
         // 2. Submit this object to the render queue for this frame!
-        Renderer::Submit(material, mesh, modelMatrix);
+        Renderer::Submit(material, mesh, modelMatrix, zIndex);
     }
 }

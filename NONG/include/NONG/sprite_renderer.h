@@ -24,6 +24,8 @@ namespace NONG {
     public:
         SpriteRenderer(Material* mat, Mesh* m, float width, float height, bool enabled = true);
 
+        int zIndex = 0;
+
         void Start() override;
 
         void Update() override;

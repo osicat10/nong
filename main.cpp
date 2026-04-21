@@ -34,14 +34,8 @@ public:
     
 };
 
-
-DECLARE_EMBEDDED_SHADER(sprite_vert);
-DECLARE_EMBEDDED_SHADER(sprite_frag);
-
 int main(int argc, char* argv[]) 
 {
-    std::cout << "Main\n";
-
     Window w("NONG Demo", {1280, 720}, SDL_WINDOW_RESIZABLE);
     try
     {
@@ -59,25 +53,41 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Using: " << w.GetGPUDriverName() << "\n";
-    w.SetClearColor(Color(0.1, 0.1, 0.1, .5f));
 
     Shader fragShader(BakedShaders::sprite_frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
     Shader vertShader(BakedShaders::sprite_vert, SDL_GPU_SHADERSTAGE_VERTEX, 0, 2);
     GraphicsPipeline pipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout());
 
     Image image("image.jpg");
-    Texture texture(image);
-
-
+    Texture2D texture(image);
     Material material(pipeline);
     material.SetTexture(0, texture);
 
+    RenderTexture renderTexture1(500, 500);
+    RenderTexture renderTexture2(500, 500);
+    RenderTexture* currentReadTexture = &renderTexture1;
+    RenderTexture* currentWriteTexture = &renderTexture1;
+    Material renderMaterial(pipeline);
+
     Mesh* quadMesh = Mesh::CreateQuad();
 
-    Object mainCameraObject("Main Camera");
-    Transform* cameraTransform = mainCameraObject.AddComponent<Transform>(0, 0, 5);
-    Camera* mainCamera = mainCameraObject.AddComponent<Camera>(cameraTransform);
+    Object cameraObject1("Camera1");
+    Transform* cameraTransform = cameraObject1.AddComponent<Transform>(0,0,5);
+    Camera* camera1 = cameraObject1.AddComponent<Camera>(cameraTransform);
+    camera1->clearColor = Color(.1, .1, .1, 1);
 
+    Object cameraObject2("Camera2");
+    Camera* camera2 = cameraObject2.AddComponent<Camera>(cameraObject2.AddComponent<Transform>(0,0,5));    
+    camera2->clearColor = Color(.5, 0, 0, 1); 
+
+    Camera* camera3 = cameraObject2.AddComponent<Camera>(cameraObject2.AddComponent<Transform>(0,0,5));
+    camera3->clearColor = Color(.5, 0, 0, 1);
+    camera3->renderOrder = -1;
+    
+
+
+    camera1->viewportW = camera2->viewportW = camera2->viewportX = .5;
+    
     Object spriteObject("Sprite Object");
     spriteObject.AddComponent<Transform>();
     spriteObject.AddComponent<SpriteRenderer>(&material, quadMesh, 100, 100);
@@ -85,8 +95,8 @@ int main(int argc, char* argv[])
     spriteObject2.AddComponent<Transform>(500,0,0);
     spriteObject2.AddComponent<SpriteRenderer>(&material, quadMesh, 100, 100);
     Object spriteObject3("Sprite Object3");
-    spriteObject3.AddComponent<Transform>(Vector3(-100,0,0), Vector3(30,30,30), Vector3(.5,.5,.5));
-    spriteObject3.AddComponent<SpriteRenderer>(&material, quadMesh, 100, 100);
+    spriteObject3.AddComponent<Transform>(Vector3(-100,0,0), Vector3(30,30,30));
+    spriteObject3.AddComponent<SpriteRenderer>(&renderMaterial, quadMesh, 300, 300);
 
     while(!w.shouldQuit)
     {
@@ -94,10 +104,12 @@ int main(int argc, char* argv[])
 
         TimeController::UpdateTime();
 
-        auto [windowWidth, windowHeight] = w.GetSize();
-        mainCamera->UpdateMatrix(windowWidth, windowHeight);
-
         std::cout << "\r" << Time::deltaTime() << std::flush;
+
+        currentWriteTexture = currentReadTexture;
+        currentReadTexture = currentReadTexture == &renderTexture1? &renderTexture2 : &renderTexture1;
+        renderMaterial.SetTexture(0, *currentReadTexture);
+        camera3->renderTexture = currentWriteTexture;   
 
         if(Input::GetKey(SDL_SCANCODE_RIGHT)) (*cameraTransform).position.x += 100.0f * Time::deltaTime();
         if(Input::GetKey(SDL_SCANCODE_LEFT))  (*cameraTransform).position.x -= 100.0f * Time::deltaTime();
@@ -107,37 +119,29 @@ int main(int argc, char* argv[])
         if(Input::GetKey(SDL_SCANCODE_LCTRL))  (*cameraTransform).position.z -= 100.0f * Time::deltaTime();
         if(Input::GetKeyPressed(SDL_SCANCODE_E)) 
         {
-            if(mainCamera->GetMode() == ProjectionMode::Orthographic)
+            if(camera1->GetMode() == ProjectionMode::Orthographic)
             {
-                mainCamera->SetMode(ProjectionMode::Perspective);
+                camera1->SetMode(ProjectionMode::Perspective);
             }
             else
             {
-                mainCamera->SetMode(ProjectionMode::Orthographic);
+                camera1->SetMode(ProjectionMode::Orthographic);
             }
         }
 
         
-        Renderer::BeginScene(mainCamera);
+        Renderer::BeginScene();
 
         MonoBehaviourController::StartNewMonoBehaviours();
         MonoBehaviourController::RunMonoBehaviours();
 
         if(Input::GetKey(SDL_SCANCODE_ESCAPE)) w.shouldQuit = true;
 
-        auto renderContext = w.BeginRenderPass();
-        if (renderContext.renderPass != nullptr)
-        {
-            SDL_GPUViewport viewport = { 0.0f, 0.0f, (float)windowWidth, (float)windowHeight, 0.0f, 1.0f };
-            SDL_SetGPUViewport(renderContext.renderPass, &viewport);
-            
-            SDL_Rect scissor = { 0, 0, windowWidth, windowHeight };
-            SDL_SetGPUScissor(renderContext.renderPass, &scissor);
+        auto frame = w.BeginFrame();
 
-            Renderer::Flush(renderContext);
-            
-            w.EndRenderPass();  
-        }              
+        Renderer::Flush(frame);
+        
+        w.EndFrame(frame);           
     }
 
     delete quadMesh;

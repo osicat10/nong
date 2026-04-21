@@ -3,27 +3,28 @@
 
 #include <SDL3/SDL.h>
 
-#include "NONG/image.h"
-
 namespace NONG {
-    class Texture
-    {
-    private:
-        SDL_GPUTexture* gpuTexture;
-        SDL_GPUSampler* nativeSampler;
-
+    class Texture {
+    protected:
+        SDL_GPUTexture* gpuTexture = nullptr;
+        SDL_GPUSampler* nativeSampler = nullptr;
         static SDL_GPUDevice* device;
-    public:
-        Texture(const Image& image);
+        
+        int width, height;
 
-        static void SetGPUDevice(SDL_GPUDevice* device);
+    public:
+        Texture();
+        virtual ~Texture();
+
+        static void SetGPUDevice(SDL_GPUDevice* dev);
         static SDL_GPUDevice* GetGPUDevice();
 
         SDL_GPUTexture* GetGPUTexture() const;
         SDL_GPUSampler* GetNativeSampler() const;
 
-        ~Texture();
+        int GetWidth() const;
+        int GetHeight() const;
     };
 }
 
-#endif 
+#endif

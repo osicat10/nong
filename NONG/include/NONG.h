@@ -16,5 +16,7 @@
 #include "NONG/material.h"
 #include "NONG/renderer.h"
 #include "NONG/sprite_renderer.h"
+#include "NONG/render_texture.h"
+#include "NONG/texture2d.h"
 
 #endif

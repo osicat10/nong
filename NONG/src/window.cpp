@@ -100,16 +100,13 @@ namespace NONG {
         Mesh::SetGPUDevice(device);
     }
 
-    void Window::SetClearColor(const Color& color) { clearColor = color; }
-    Color Window::GetClearColor() { return clearColor; }
-
     SDL_GPUDevice* Window::GetGPUDevice() const { return device; }
     SDL_Window* Window::GetWindow() const { return window; }
 
-    RenderContext Window::BeginRenderPass()
+    FrameData Window::BeginFrame()
     {
-        cmdBuf = SDL_AcquireGPUCommandBuffer(device);
-        
+        SDL_GPUCommandBuffer* cmdBuf = SDL_AcquireGPUCommandBuffer(device);
+
         SDL_GPUTexture* swapchainTexture;
         Uint32 swapchainWidth, swapchainHeight;
         bool acquired = SDL_AcquireGPUSwapchainTexture(cmdBuf, window, &swapchainTexture, &swapchainWidth, &swapchainHeight);
@@ -123,39 +120,18 @@ namespace NONG {
             RecreateDepthTexture(swapchainWidth, swapchainHeight);
         }
 
-        // 1. The Color Target (What you see)
-        SDL_GPUColorTargetInfo colorTargetInfo = {};
-        colorTargetInfo.texture = swapchainTexture;
-        colorTargetInfo.clear_color.r = clearColor.r;
-        colorTargetInfo.clear_color.g = clearColor.g;
-        colorTargetInfo.clear_color.b = clearColor.b;
-        colorTargetInfo.clear_color.a = clearColor.a;
-        colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
-        colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
-
-        SDL_GPUDepthStencilTargetInfo depthTargetInfo = {};
-        depthTargetInfo.texture = depthTexture;
-        depthTargetInfo.clear_depth = 1.0f; 
-        depthTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
-        depthTargetInfo.store_op = SDL_GPU_STOREOP_DONT_CARE;
-        depthTargetInfo.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
-        depthTargetInfo.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
-        depthTargetInfo.cycle = true;
-        
-        renderPass = SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, &depthTargetInfo);
-
-        return RenderContext{
+        return FrameData {
             .cmdBuf = cmdBuf,
-            .renderPass = renderPass
+            .swapchainColor = swapchainTexture,
+            .swapchainDepth = depthTexture,
+            .width = swapchainWidth,
+            .height = swapchainHeight
         };
     }
-    void Window::EndRenderPass()
-    {
-        if(renderPass) SDL_EndGPURenderPass(renderPass);
-        if(cmdBuf) SDL_SubmitGPUCommandBuffer(cmdBuf);
 
-        renderPass = nullptr;
-        cmdBuf = nullptr;
+    void Window::EndFrame(const FrameData& fd)
+    {
+        if(fd.cmdBuf) SDL_SubmitGPUCommandBuffer(fd.cmdBuf);
     }
 
     void Window::HandleEvents(std::function<void(SDL_Event)> customHandler)

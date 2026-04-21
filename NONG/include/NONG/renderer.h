@@ -1,7 +1,7 @@
 #ifndef NONG_RENDERER_H
 #define NONG_RENDERER_H
 
-#include "NONG/render_context.h"
+#include "NONG/window.h"
 #include "NONG/material.h"
 #include "NONG/mesh.h"
 #include "NONG/camera.h"
@@ -15,19 +15,22 @@ namespace NONG {
         Material* material;
         Mesh* mesh;
         const float* modelMatrix;
+        int zIndex;
     };
 
     class Renderer {
     private:
         static std::vector<RenderCommand> commandQueue;
-        static const Camera* activeCamera;
+
+        static void DrawCamera(const FrameData& frame, Camera* camera, SDL_GPURenderPass* renderPass, 
+                              GraphicsPipeline*& currentPipeline, Material*& currentMaterial, Mesh*& currentMesh);
 
     public:
-        static void BeginScene(Camera* camera); 
+        static void BeginScene(); 
 
-        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix);
+        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex);
 
-        static void Flush(const RenderContext& ctx); 
+        static void Flush(const FrameData& frame); 
     };
 }
 

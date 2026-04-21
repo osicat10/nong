@@ -37,4 +37,7 @@ namespace NONG {
 
 #define DECLARE_EMBEDDED_SHADER(Name) namespace NONG::BakedShaders { extern const EmbeddedShaderData Name; }
 
+DECLARE_EMBEDDED_SHADER(sprite_vert);
+DECLARE_EMBEDDED_SHADER(sprite_frag);
+
 #endif
