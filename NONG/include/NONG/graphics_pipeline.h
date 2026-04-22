@@ -21,7 +21,7 @@ namespace NONG {
         SDL_GPUGraphicsPipeline* nativePipeline;
 
     public:
-        GraphicsPipeline(const Shader& vertShader, const Shader& fragShader, const VertexLayout& layout);
+        GraphicsPipeline(const Shader& vertShader, const Shader& fragShader, const VertexLayout& layout, bool depthTest = true, bool alphaBlend = false);
         ~GraphicsPipeline();
 
         SDL_GPUGraphicsPipeline* GetNative() const { return nativePipeline; }

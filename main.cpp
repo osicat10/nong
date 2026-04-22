@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     Shader fragShader(BakedShaders::sprite_frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
     Shader vertShader(BakedShaders::sprite_vert, SDL_GPU_SHADERSTAGE_VERTEX, 0, 2);
     GraphicsPipeline pipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout());
+    GraphicsPipeline uiPipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout(), false, true);
 
     Image image("image.jpg");
     Texture2D texture(image);
@@ -83,10 +84,15 @@ int main(int argc, char* argv[])
     Camera* camera3 = cameraObject2.AddComponent<Camera>(cameraObject2.AddComponent<Transform>(0,0,5));
     camera3->clearColor = Color(.5, 0, 0, 1);
     camera3->renderOrder = -1;
-    
-
 
     camera1->viewportW = camera2->viewportW = camera2->viewportX = .5;
+
+    Object uiCamObj("UICamera");
+    Camera* uiCam = uiCamObj.AddComponent<Camera>(uiCamObj.AddComponent<Transform>());
+    uiCam->SetMode(ProjectionMode::ScreenSpace);
+    uiCam->cullingMask = LAYER_UI;
+    uiCam->renderOrder = 20;
+    uiCam->clearColor.a = 0.0f;
     
     Object spriteObject("Sprite Object");
     spriteObject.AddComponent<Transform>();
@@ -97,6 +103,16 @@ int main(int argc, char* argv[])
     Object spriteObject3("Sprite Object3");
     spriteObject3.AddComponent<Transform>(Vector3(-100,0,0), Vector3(30,30,30));
     spriteObject3.AddComponent<SpriteRenderer>(&renderMaterial, quadMesh, 300, 300);
+
+
+    Image imageBar("bar.png");
+    Texture2D textureBar(imageBar);
+    Material uiMaterial(uiPipeline);
+    uiMaterial.SetTexture(0, textureBar);
+
+    Object healthBar("HealthBar");
+    healthBar.AddComponent<Transform>(50, 50, 0);
+    healthBar.AddComponent<UIRenderer>(&uiMaterial, quadMesh, 200, 30);
 
     while(!w.shouldQuit)
     {

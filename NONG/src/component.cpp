@@ -1,5 +1,7 @@
 #include "NONG/component.h"
 
+#include <algorithm>
+
 namespace NONG {
     Object* Component::GetObject()
     {
@@ -11,17 +13,17 @@ namespace NONG {
     void MonoBehaviour::LateUpdate() { }
 
     std::vector<MonoBehaviour*> MonoBehaviour::newMonoBehaviours;
-    std::set<MonoBehaviour*> MonoBehaviour::monoBehaviours;
+    std::vector<MonoBehaviour*> MonoBehaviour::monoBehaviours;
 
     MonoBehaviour::MonoBehaviour() : MonoBehaviour(true) { }
     MonoBehaviour::MonoBehaviour(bool enabled) : enabled(enabled)
     {
         newMonoBehaviours.push_back(this);
-        monoBehaviours.insert(this);
+        monoBehaviours.push_back(this);
     }
     MonoBehaviour::~MonoBehaviour()
     {
-        monoBehaviours.erase(this);
+        monoBehaviours.erase(std::find(monoBehaviours.begin(), monoBehaviours.end(), this));
     }
 
     void MonoBehaviour::StartNewMonoBehaviours()

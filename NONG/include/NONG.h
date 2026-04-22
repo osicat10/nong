@@ -18,5 +18,7 @@
 #include "NONG/sprite_renderer.h"
 #include "NONG/render_texture.h"
 #include "NONG/texture2d.h"
+#include "NONG/ui_renderer.h"
+#include "NONG/types.h"
 
 #endif

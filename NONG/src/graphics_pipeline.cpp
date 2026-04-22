@@ -29,7 +29,7 @@ namespace NONG {
         return layout;
     }
 
-    GraphicsPipeline::GraphicsPipeline(const Shader& vertShader, const Shader& fragShader, const VertexLayout& layout) 
+    GraphicsPipeline::GraphicsPipeline(const Shader& vertShader, const Shader& fragShader, const VertexLayout& layout, bool depthTest, bool alphaBlend) 
         : nativePipeline(nullptr) 
     {
         if (!device) throw std::runtime_error("GraphicsPipeline GPU Device not set!");
@@ -51,13 +51,22 @@ namespace NONG {
 
         SDL_GPUColorTargetDescription colorTargetDesc = {};
         colorTargetDesc.format = screenFormat;
-        colorTargetDesc.blend_state.enable_blend = true;
-        colorTargetDesc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-        colorTargetDesc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-        colorTargetDesc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-        colorTargetDesc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-        colorTargetDesc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-        colorTargetDesc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+
+        if (alphaBlend) 
+        {
+            colorTargetDesc.blend_state.enable_blend = true;
+            colorTargetDesc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+            colorTargetDesc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+            colorTargetDesc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+            
+            colorTargetDesc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+            colorTargetDesc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+            colorTargetDesc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+        }
+        else 
+        {
+            colorTargetDesc.blend_state.enable_blend = false;
+        }
 
         pipelineInfo.target_info.num_color_targets = 1;
         pipelineInfo.target_info.color_target_descriptions = &colorTargetDesc;
@@ -65,8 +74,8 @@ namespace NONG {
         pipelineInfo.target_info.has_depth_stencil_target = true;
         pipelineInfo.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT;
 
-        pipelineInfo.depth_stencil_state.enable_depth_test = true;
-        pipelineInfo.depth_stencil_state.enable_depth_write = true;
+        pipelineInfo.depth_stencil_state.enable_depth_test = depthTest;
+        pipelineInfo.depth_stencil_state.enable_depth_write = depthTest;
         
         pipelineInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL;
 

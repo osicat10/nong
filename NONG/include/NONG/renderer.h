@@ -5,18 +5,21 @@
 #include "NONG/material.h"
 #include "NONG/mesh.h"
 #include "NONG/camera.h"
+#include "NONG/types.h"
 #include <vector>
 
 namespace NONG {
 
     class Material;
+    class Mesh;
 
     struct RenderCommand {
         Material* material;
         Mesh* mesh;
         const float* modelMatrix;
         int zIndex;
-    };
+        uint32_t layer;
+    };    
 
     class Renderer {
     private:
@@ -28,7 +31,7 @@ namespace NONG {
     public:
         static void BeginScene(); 
 
-        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex);
+        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer = LAYER_WORLD);
 
         static void Flush(const FrameData& frame); 
     };

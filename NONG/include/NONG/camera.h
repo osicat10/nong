@@ -5,6 +5,7 @@
 #include "NONG/transform.h"
 #include "NONG/color.h"
 #include "NONG/render_texture.h"
+#include "NONG/types.h"
 
 #include <SDL3/SDL.h>
 
@@ -12,7 +13,8 @@ namespace NONG {
 
     enum class ProjectionMode {
         Orthographic, // 2D flat view
-        Perspective   // 3D depth view
+        Perspective,  // 3D depth view
+        ScreenSpace   // (0, 0) -> top left corner
     };
 
     class Camera : public Component {
@@ -40,9 +42,13 @@ namespace NONG {
         float viewportW = 1.0f;
         float viewportH = 1.0f;
 
+        // Culling mask
+        uint32_t cullingMask = LAYER_WORLD; 
+
         // Clear color
         Color clearColor = Color::white();
 
+        // Optional render texture
         RenderTexture* renderTexture = nullptr;  
 
 

@@ -10,9 +10,9 @@ namespace NONG {
         commandQueue.clear();
     }
 
-    void Renderer::Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex) 
+    void Renderer::Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer) 
     {
-        commandQueue.push_back({material, mesh, modelMatrix, zIndex});
+        commandQueue.push_back({material, mesh, modelMatrix, zIndex, layer});
     }
 
     void Renderer::DrawCamera(const FrameData& frame, Camera* camera, SDL_GPURenderPass* renderPass, 
@@ -40,6 +40,8 @@ namespace NONG {
 
         for (const auto& cmd : commandQueue) 
         {
+            if ((camera->cullingMask & cmd.layer) == 0) continue;
+            
             GraphicsPipeline* newPipeline = cmd.material->GetPipeline();
             if (newPipeline != currentPipeline) 
             {

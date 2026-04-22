@@ -8,7 +8,6 @@
 
 #include <string>
 #include <vector>
-#include <set>
 
 namespace NONG {
     class Object;
@@ -37,7 +36,7 @@ namespace NONG {
     {
         DECLARE_COMPONENT(MonoBehaviour)
     private:
-        static std::set<MonoBehaviour*> monoBehaviours;
+        static std::vector<MonoBehaviour*> monoBehaviours;
         static std::vector<MonoBehaviour*> newMonoBehaviours;
         static void RunMonoBehaviours();
         static void StartNewMonoBehaviours();

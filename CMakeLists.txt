@@ -56,6 +56,7 @@ add_library(NONG STATIC
     NONG/src/sprite_renderer.cpp
     NONG/src/render_texture.cpp
     NONG/src/texture2d.cpp
+    NONG/src/ui_renderer.cpp
     ${GENERATED_CPP_FILE}
 )
 add_dependencies(NONG CompileShaders)
