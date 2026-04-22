@@ -20,5 +20,7 @@
 #include "NONG/texture2d.h"
 #include "NONG/ui_renderer.h"
 #include "NONG/types.h"
+#include "NONG/font.h"
+#include "NONG/text_renderer.h"
 
 #endif

@@ -26,6 +26,26 @@ namespace NONG {
         }
     }
 
+    Image::Image(const std::vector<Color>& pixels, const int width, const int height) : width(width), height(height), channels(4)
+    {
+        int size = width * height * channels;
+
+        cpuPixels = (unsigned char*)std::malloc(size);
+
+        for(int y = 0; y < height; y++)
+        {
+            for(int x = 0; x < width; x++)
+            {
+                int i = y * (width * 4) + (x * 4);
+                int j = y * width + x;
+                cpuPixels[i + 0] = pixels[j].r * 255;
+                cpuPixels[i + 1] = pixels[j].g * 255;
+                cpuPixels[i + 2] = pixels[j].b * 255;
+                cpuPixels[i + 3] = pixels[j].a * 255;
+            }
+        }
+    }
+
     int Image::getWidth() const { return width; }
     int Image::getHeight() const { return height; }
     int Image::getChannels() const { return channels; }

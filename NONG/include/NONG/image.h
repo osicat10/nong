@@ -2,6 +2,8 @@
 #define NONG_IMAGE_H
 
 #include <string>
+#include <vector>
+#include "NONG/color.h"
 
 namespace NONG {
     class Image
@@ -11,6 +13,7 @@ namespace NONG {
         unsigned char* cpuPixels;
 
     public:
+        Image(const std::vector<Color>& pixels, const int width, const int height);
         Image(const unsigned char* byteArray, const int arraySize);
         Image(const std::string& path);
 

@@ -48,7 +48,6 @@ namespace NONG {
     RenderTexture::~RenderTexture()
     {
         if(depth) SDL_ReleaseGPUTexture(device, depth);
-        if(gpuTexture) SDL_ReleaseGPUTexture(device, gpuTexture);
     }
 
     SDL_GPUTexture* RenderTexture::GetDepthTexture() const {return depth;}

@@ -17,10 +17,12 @@ namespace NONG {
         float xPos = transform->position.x + (width / 2.0f);
         float yPos = transform->position.y + (height / 2.0f);
 
-        modelMatrix[0] = width;  modelMatrix[4] = 0.0f;   modelMatrix[8]  = 0.0f; modelMatrix[12] = xPos;
-        modelMatrix[1] = 0.0f;   modelMatrix[5] = height; modelMatrix[9]  = 0.0f; modelMatrix[13] = yPos;
-        modelMatrix[2] = 0.0f;   modelMatrix[6] = 0.0f;   modelMatrix[10] = 1.0f; modelMatrix[14] = 0.5f; 
-        modelMatrix[3] = 0.0f;   modelMatrix[7] = 0.0f;   modelMatrix[11] = 0.0f; modelMatrix[15] = 1.0f;
+        float modelMatrix[16] = {
+            width, 0.0f,   0.0f, 0.0f,
+            0.0f,  height, 0.0f, 0.0f,
+            0.0f,  0.0f,   1.0f, 0.0f,
+            xPos,  yPos,   (float)transform->position.z, 1.0f 
+        };
 
         Renderer::Submit(material, mesh, modelMatrix, 0, LAYER_UI); 
     }

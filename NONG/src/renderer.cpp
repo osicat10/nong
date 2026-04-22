@@ -1,5 +1,6 @@
 #include "NONG/renderer.h"
 #include <algorithm>
+#include <cstring>
 
 namespace NONG {
 
@@ -10,9 +11,24 @@ namespace NONG {
         commandQueue.clear();
     }
 
-    void Renderer::Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer) 
+    void Renderer::Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer, const float* uvData) 
     {
-        commandQueue.push_back({material, mesh, modelMatrix, zIndex, layer});
+        RenderCommand cmd;
+        cmd.material = material;
+        cmd.mesh = mesh;
+        cmd.zIndex = zIndex;
+        cmd.layer = layer;
+
+        std::memcpy(cmd.modelMatrix, modelMatrix, sizeof(float) * 16);
+
+        if (uvData) {
+            std::memcpy(cmd.uvBounds, uvData, sizeof(float) * 4);
+        } else {
+            cmd.uvBounds[0] = 0.0f; cmd.uvBounds[1] = 0.0f; 
+            cmd.uvBounds[2] = 1.0f; cmd.uvBounds[3] = 1.0f; 
+        }
+
+        commandQueue.push_back(cmd);
     }
 
     void Renderer::DrawCamera(const FrameData& frame, Camera* camera, SDL_GPURenderPass* renderPass, 
@@ -67,6 +83,7 @@ namespace NONG {
             }
 
             SDL_PushGPUVertexUniformData(frame.cmdBuf, 1, cmd.modelMatrix, 64);
+            SDL_PushGPUVertexUniformData(frame.cmdBuf, 2, cmd.uvBounds, 16);             
             SDL_DrawGPUIndexedPrimitives(renderPass, cmd.mesh->GetIndexCount(), 1, 0, 0, 0);
         }
     }

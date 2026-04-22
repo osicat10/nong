@@ -16,7 +16,8 @@ namespace NONG {
     struct RenderCommand {
         Material* material;
         Mesh* mesh;
-        const float* modelMatrix;
+        float modelMatrix[16];
+        float uvBounds[4];
         int zIndex;
         uint32_t layer;
     };    
@@ -31,7 +32,7 @@ namespace NONG {
     public:
         static void BeginScene(); 
 
-        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer = LAYER_WORLD);
+        static void Submit(Material* material, Mesh* mesh, const float* modelMatrix, int zIndex, uint32_t layer = LAYER_WORLD, const float* uvData = nullptr);
 
         static void Flush(const FrameData& frame); 
     };

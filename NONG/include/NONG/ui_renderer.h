@@ -16,8 +16,6 @@ namespace NONG {
         float width, height;
         Transform* transform;
 
-        float modelMatrix[16];
-
     public:
         UIRenderer(Material* mat, Mesh* m, float w, float h);
 
