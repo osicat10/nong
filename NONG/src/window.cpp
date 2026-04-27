@@ -103,6 +103,22 @@ namespace NONG {
     SDL_GPUDevice* Window::GetGPUDevice() const { return device; }
     SDL_Window* Window::GetWindow() const { return window; }
 
+    void Window::SetIcon(const Image& iconImg) 
+    {
+        SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(
+            iconImg.getWidth(), 
+            iconImg.getHeight(), 
+            SDL_PIXELFORMAT_RGBA32, 
+            iconImg.getCpuPixels(), 
+            iconImg.getWidth() * 4
+        );
+
+        if (iconSurface) {
+            SDL_SetWindowIcon(window, iconSurface);
+            SDL_DestroySurface(iconSurface);
+        }
+    }
+
     FrameData Window::BeginFrame()
     {
         SDL_GPUCommandBuffer* cmdBuf = SDL_AcquireGPUCommandBuffer(device);

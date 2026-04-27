@@ -44,11 +44,13 @@ const bool debug = true;
 int main(int argc, char* argv[]) 
 {
     Window w("NONG Demo", {1280, 720}, SDL_WINDOW_RESIZABLE);
+    Image image("image.jpg");
 
     {
         try
         {
             w.Initialize(debug);
+            w.SetIcon(image);
         }
         catch(const std::exception& e)
         {
@@ -65,7 +67,7 @@ int main(int argc, char* argv[])
         GraphicsPipeline circlePipeline(vertShader, circleFrag, VertexLayout::CreateSpriteLayout());
         GraphicsPipeline uiPipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout(), false, true);
 
-        Image image("image.jpg");
+        
         Texture2D texture(image);
         Material material(pipeline);
         material.SetTexture(0, texture);

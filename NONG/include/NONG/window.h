@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 
 #include "NONG/utility.h"
+#include "NONG/image.h"
 
 #include <string>
 #include <functional>
@@ -61,6 +62,8 @@ namespace NONG {
 
         SDL_GPUDevice* GetGPUDevice() const;
         SDL_Window* GetWindow() const;
+
+        void SetIcon(const Image& image);
 
         [[nodiscard]] FrameData BeginFrame();
         void EndFrame(const FrameData& frame);
