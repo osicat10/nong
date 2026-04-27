@@ -16,5 +16,12 @@ float4 PSMain(VSOutput input) : SV_Target
         discard; 
     }
     
+    float2 centerUV = input.uv - 0.5f;
+    float distance = length(centerUV);
+    
+    if (distance > 0.5f) {
+        discard; 
+    }
+    
     return texColor * uColor;
 }

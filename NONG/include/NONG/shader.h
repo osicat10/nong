@@ -39,5 +39,6 @@ namespace NONG {
 
 DECLARE_EMBEDDED_SHADER(sprite_vert);
 DECLARE_EMBEDDED_SHADER(sprite_frag);
+DECLARE_EMBEDDED_SHADER(circle_frag);
 
 #endif

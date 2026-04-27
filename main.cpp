@@ -58,15 +58,22 @@ int main(int argc, char* argv[])
 
         std::cout << "Using: " << w.GetGPUDriverName() << "\n";
 
-        Shader fragShader(BakedShaders::sprite_frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+        Shader circleFrag(BakedShaders::circle_frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
+        Shader fragShader(BakedShaders::sprite_frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
         Shader vertShader(BakedShaders::sprite_vert, SDL_GPU_SHADERSTAGE_VERTEX, 0, 3);
         GraphicsPipeline pipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout());
+        GraphicsPipeline circlePipeline(vertShader, circleFrag, VertexLayout::CreateSpriteLayout());
         GraphicsPipeline uiPipeline(vertShader, fragShader, VertexLayout::CreateSpriteLayout(), false, true);
 
         Image image("image.jpg");
         Texture2D texture(image);
         Material material(pipeline);
         material.SetTexture(0, texture);
+        material.SetFragmentUniforms(Color::white());
+
+        Material experimentMaterial(circlePipeline);
+        experimentMaterial.SetTexture(0, texture);
+        //experimentMaterial.SetFragmentUniforms(Color::red());
 
         RenderTexture renderTexture1(500, 500);
         RenderTexture renderTexture2(500, 500);
@@ -100,7 +107,7 @@ int main(int argc, char* argv[])
         
         Object spriteObject("Sprite Object");
         spriteObject.AddComponent<Transform>();
-        spriteObject.AddComponent<SpriteRenderer>(&material, quadMesh, 100, 100);
+        spriteObject.AddComponent<SpriteRenderer>(&experimentMaterial, quadMesh, 100, 100);
         Object spriteObject2("Sprite Object2");
         spriteObject2.AddComponent<Transform>(500,0,0);
         spriteObject2.AddComponent<SpriteRenderer>(&material, quadMesh, 100, 100);

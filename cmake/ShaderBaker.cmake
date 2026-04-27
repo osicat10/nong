@@ -3,7 +3,7 @@ if(NOT DXC_COMPILER)
     message(FATAL_ERROR "Could not find dxc.exe! Ensure Vulkan SDK is installed.")
 endif()
 
-set(SHADER_OUT_DIR "${CMAKE_BINARY_DIR}/compiled_shaders")
+set(SHADER_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/NONG/src/compiled_shaders")
 file(MAKE_DIRECTORY ${SHADER_OUT_DIR})
 
 set(GEN_CPP_CODE "#include \"NONG/shader.h\"\n\nnamespace NONG::BakedShaders {\n")
