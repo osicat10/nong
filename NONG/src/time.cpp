@@ -20,7 +20,7 @@ namespace NONG{
         _deltaTimeNs = _currentFrameTimeNs - _lastFrameTimeNs;
 
         _deltaTime = _deltaTimeNs / 1000000000.0;
-        _currentFrameTime = _currentFrameTime / 1000000000.0;
+        _currentFrameTime = _currentFrameTimeNs / 1000000000.0;
     }
 
     double Time::deltaTime() { return _deltaTime; }
